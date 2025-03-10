@@ -3,7 +3,7 @@
 import os
 import pandas as pd
 from google.cloud import bigquery
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="cool-bay-452611-b5-3811a64fd49a.json" # lokalizacja pobranego klucza z punktu 1.4.
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/wojte/Documents/studia/semestr 6/BigData/BigData24-25/cool-bay-452611-b5-3811a64fd49a.json" # lokalizacja pobranego klucza z punktu 1.4.
 client = bigquery.Client() 
 
 # 2.6
@@ -34,10 +34,17 @@ query = f"SELECT COUNT(DISTINCT country_name) AS total_rows FROM bigquery-public
 result = client.query(query).result()
 country_count = list(result)[0]["total_rows"]
 
+#country_list = list(result)[0]
+#df = client.query_and_wait(query).to_dataframe()
+
+query = f"SELECT DISTINCT country_name FROM bigquery-public-data.covid19_open_data.covid19_open_data "
+result = client.query(query).result()
+country_list = list(result)[0]
+print(country_list[0])
 print(f"Total countries: {country_count}")
-with open("countires.txt", "w") as f:
-    for col in df.columns:
-        f.write(col + "\n")
+with open("countries.txt", "w") as f:
+    for country in country_list:
+      f.write(country)
 
 # Wniosek:Są różne definicje krajów, ale w uproszczeniu można przyjąć, że jest ich około 200. Zwracanych jest 246 kodów państw, co znaczy, 
 # że w jakiś sposób te państwa zostały podzielone na więcej(np. przez liczenie terytoriów zależnych oddzielnie, na jedno państwo przypada kilka kodów etc.)
