@@ -38,13 +38,12 @@ print(f"Total countries: {country_count}")
 query = """
 SELECT *
 FROM `bigquery-public-data.covid19_open_data.covid19_open_data`
-WHERE country_code = 'US'
+WHERE country_code LIKE 'FR' AND date = '2020-10-06' AND location_key LIKE 'FR_BFC_%'
 ORDER BY date
-LIMIT 24
 """
 
 df = client.query_and_wait(query).to_dataframe()
-print(df)
+print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased']])
 # nie wiem
 
 
@@ -108,7 +107,7 @@ print(str(row.new_confirmed) + ", " + str(row.new_deceased) + ", " + str(row.new
 
 # 3.6. Sprawdź więcej informacji (co najmniej 5 różnych) o danych dotyczących COVID-19. W tym celu nie wykonuj żadnych dodatkowych obliczeń. 
 
-# 1.
+# 1. Covid started in December 2019 in China
 
 # 2.
 
