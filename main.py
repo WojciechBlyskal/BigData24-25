@@ -3,7 +3,8 @@
 import os
 import pandas as pd
 from google.cloud import bigquery
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/wojte/Documents/studia/semestr 6/BigData/cool-bay-452611-b5-3811a64fd49a.json" # lokalizacja pobranego klucza z punktu 1.4.
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/ozare/Desktop/BigData/bigdata-zadania-e945fab257f4.json" # lokalizacja pobranego klucza z punktu 1.4.
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/wojte/Documents/studia/semestr 6/BigData/cool-bay-452611-b5-3811a64fd49a.json" # lokalizacja pobranego klucza z punktu 1.4.
 client = bigquery.Client() 
 
 # 2.6
@@ -11,6 +12,12 @@ query = ('select * from bigquery-public-data.covid19_open_data.covid19_open_data
 query_job = client.query(query)    
 query_result = query_job.result()  
 df = query_result.to_dataframe()
+
+# with open("columns.txt", "w") as f:
+#     for col in df.columns:
+#         f.write(col + "\n")
+#
+# print("Column names saved to columns.txt")
 
 #print(df)
 
@@ -31,7 +38,7 @@ country_count = list(result)[0]["total_rows"]
 print(f"Total countries: {country_count}")
 
 # Wnioski:Są różne definicje krajów, ale w uproszczeniu można przyjąć, że jest ich około 200. Zwracanych jest 246 kodów państw, co znaczy, 
-# że w jakiś sposób te państwa zostały podzielone na więcej(przez liczenie terytoriów zależnych oddzielnie)
+# że w jakiś sposób te państwa zostały podzielone na więcej (przez liczenie terytoriów zależnych oddzielnie)
 
 # 3.3. Sprawdź, w jaki sposób zapisywane są dzienne informacje dla krajów.
 query = """
@@ -73,23 +80,34 @@ ORDER BY location_key
 
 df = client.query_and_wait(query).to_dataframe()
 print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased', 'average_temperature_celsius']])
-# Wnioski:Są państwa gdzie np. Maroko, Tunezja, Samoa gdzie wyrzuca tylko 1 wynik. Są państwa np. Polska, Francja, USA 
-# gdzie zwraca wiele rekordów, co po przejrzeniu danych okazało się wynikać, z podzieleniem danych na poszczególne regiony
-# (pierwsze dwie kraj, kolejne kilka liter region, a liczby jeszcze mniejszy region(np. we Francji departament)). Są też kraje  
-# jak Gwatemala, która pomimo posiadania podziału na regiony posiada tylko dane zbiorcze z całego kraju
 
+# Wnioski: Są państwa, np. Maroko, Tunezja, Samoa, gdzie z danego dnia otrzymujemy tylko 1 rekord jako wynik, a są też
+# państwa, np. Polska, Francja, USA, gdzie zwracane jest wiele rekordów. Po przejrzeniu danych okazuje się, iż wynika to
+# z podziału danych na poszczególne regiony- kolumna location_key jest zbudowana następująco: pierwsze dwie litery to kod kraju,
+# kolejne kilka liter to region, po czym następuje ciąg cyfr, który najprawdopodobniej oznacza rozróżnienie na jeszcze mniejsze
+# regiony (np. na departamenty we Francji). Są też kraje, np. Gwatemala, która pomimo posiadania oficjalnego podziału na regiony,
+# dla niektórych danych rozróżnia je między poszczególne regiony, a dla innych są jedynie wartości zbiorcze, np. dane o pogodzie
+# są rozróżnione między regionami, a o zachorowaniach podano jedynie liczby zbiorczo dla całego kraju.
 
-
-"""with open("columns.txt", "w") as f:
-    for col in df.columns:
-        f.write(col + "\n")
-
-print("Column names saved to columns.txt")"""
 
 # 3.4. Sprawdź, w jaki sposób zapisywane są wartości liczbowe.  
 #numeric_cols = df.select_dtypes(include=['number']).columns
 #print("Numeric columns:", numeric_cols.tolist())
 #print(df[['aggregation_level', 'new_confirmed', 'new_deceased', 'cumulative_confirmed', 'cumulative_deceased', 'cumulative_tested']])
+
+query = ('select * from bigquery-public-data.covid19_open_data.covid19_open_data limit 10')
+query_job = client.query(query)
+query_result = query_job.result()
+df = query_result.to_dataframe()
+
+numeric_dtypes = df.select_dtypes(include=["number"]).dtypes
+print(numeric_dtypes)
+
+# Zapis do pliku
+with open("numeric_dtypes.txt", "w") as f:
+    f.write(numeric_dtypes.to_string())
+
+print("Typy danych kolumn liczbowych zapisane do numeric_dtypes.txt")
 
 #  3.5. Sprawdź, jaki przedział czasowy jest uwzględniony w danych. 
 # Dodatkowo porównaj przedziały czasowe dla przypadków nowych zachorowań, nowych śmierci oraz nowych zaszczepionych osób w danych.
