@@ -3,7 +3,7 @@
 import os
 import pandas as pd
 from google.cloud import bigquery
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/wojte/Documents/studia/semestr 6/BigData/BigData24-25/cool-bay-452611-b5-3811a64fd49a.json" # lokalizacja pobranego klucza z punktu 1.4.
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/wojte/Documents/studia/semestr 6/BigData/cool-bay-452611-b5-3811a64fd49a.json" # lokalizacja pobranego klucza z punktu 1.4.
 client = bigquery.Client() 
 
 # 2.6
@@ -34,17 +34,49 @@ print(f"Total countries: {country_count}")
 # że w jakiś sposób te państwa zostały podzielone na więcej(przez liczenie terytoriów zależnych oddzielnie)
 
 # 3.3. Sprawdź, w jaki sposób zapisywane są dzienne informacje dla krajów.
-
 query = """
 SELECT *
 FROM `bigquery-public-data.covid19_open_data.covid19_open_data`
-WHERE country_code LIKE 'FR' AND date = '2020-10-06' AND location_key LIKE 'FR_BFC_%'
-ORDER BY date
+WHERE country_name LIKE 'Morocco' AND date = '2021-10-06'
+ORDER BY location_key
 """
 
 df = client.query_and_wait(query).to_dataframe()
 print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased']])
-# nie wiem
+
+query = """
+SELECT *
+FROM `bigquery-public-data.covid19_open_data.covid19_open_data`
+WHERE country_name LIKE 'France' AND date = '2021-10-06'
+ORDER BY location_key
+"""
+
+df = client.query_and_wait(query).to_dataframe()
+print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased', 'location_geometry']])
+
+query = """
+SELECT *
+FROM `bigquery-public-data.covid19_open_data.covid19_open_data`
+WHERE country_name LIKE 'France' AND date = '2020-10-06' AND new_deceased < 0
+ORDER BY location_key
+"""
+
+df = client.query_and_wait(query).to_dataframe()
+print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased']])
+
+query = """
+SELECT *
+FROM `bigquery-public-data.covid19_open_data.covid19_open_data`
+WHERE country_name LIKE 'Guatemala' AND date = '2021-10-06'
+ORDER BY location_key
+"""
+
+df = client.query_and_wait(query).to_dataframe()
+print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased', 'average_temperature_celsius']])
+# Wnioski:Są państwa gdzie np. Maroko, Tunezja, Samoa gdzie wyrzuca tylko 1 wynik. Są państwa np. Polska, Francja, USA 
+# gdzie zwraca wiele rekordów, co po przejrzeniu danych okazało się wynikać, z podzieleniem danych na poszczególne regiony
+# (pierwsze dwie kraj, kolejne kilka liter region, a liczby jeszcze mniejszy region(np. we Francji departament)). Są też kraje  
+# jak Gwatemala, która pomimo posiadania podziału na regiony posiada tylko dane zbiorcze z całego kraju
 
 
 
