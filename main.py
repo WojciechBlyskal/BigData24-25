@@ -223,7 +223,16 @@ print(str(row.new_confirmed) + ", " + str(row.new_deceased) + ", "
 # dotyczących COVID-19. W tym celu nie wykonuj żadnych dodatkowych
 # obliczeń.
 
-# 1. Covid started in December 2019 in China
+query = ('SELECT cumulative_confirmed, cumulative_deceased, '
+        'cumulative_persons_vaccinated '
+        'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+)
+result = client.query(query).result()
+row = next(result)
+print(str(row.cumulative_confirmed) + ", " + str(row.cumulative_deceased) + ", " 
+      + str(row.cumulative_persons_vaccinated))
+
+# 1. 
 
 # 2.
 
@@ -245,15 +254,20 @@ print(str(row.new_confirmed) + ", " + str(row.new_deceased) + ", "
 # które będą zrozumiałe dla człowieka oraz uniwersalne i potencjalnie
 # przyszłościowe do dalszego przetwarzania.
 
-query = ('SELECT country_name, iso_3166_1_alpha_2, iso_3166_1_alpha_3, ' 
-        'population, population_male, population_female, population_rural, '
-        'population_urban, population_density, human_development_index, '
+query = ('SELECT DISTINCT(country_name), '#iso_3166_1_alpha_2, iso_3166_1_alpha_3, ' 
+        #'population, population_male, population_female, population_rural, '
+        #'population_urban, population_density, human_development_index, '
         'gdp_usd, gdp_per_capita_usd, population_largest_city, '
-        'population_clustered, life_expectancy'
-        'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+        'life_expectancy, human_capital_index, area_sq_km '
+        'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+        'LIMIT 20'
+)
 query_job = client.query(query)
 query_result = query_job.result()
 df_1 = query_result.to_dataframe()
+
+print(df_1)
+df_1 = df_1.distinct
 
 # Uzasadnienie: Dobieramy nazwę państwa, bo to jest jedyna postać 
 # czytelna dla każdego człowieka. Zachowujemy obie formy ISO zapisu
@@ -262,4 +276,21 @@ df_1 = query_result.to_dataframe()
 # na płeć, miejsce zamieszkania i gęstość zamieszkania, gdyż są to 
 # czynniki, które mogą mieć znaczenie przy badaniu choroby. Zachowujemy
 # HDI oraz pkb na osobę, gdyż daje nam to obraz standardu życiowego
-# w skali odpowiednio lokalnej oraz międzynarodowej.
+# w skali odpowiednio lokalnej oraz międzynarodowej. 
+
+# 4.2. Chcemy wygenerować statystyki dotyczące zachorowań na COVID-19 
+# na całym świecie.
+
+# query = ('SELECT new_confirmed, cumulative_confirmed, new_confirmed_age_0, '
+#         'new_confirmed_age_1, new_confirmed_age_2, new_confirmed_age_3, '
+#         'new_confirmed_age_4, new_confirmed_age_5, new_confirmed_age_6, '
+#         'new_confirmed_age_7, new_confirmed_age_8, new_confirmed_age_9, '
+#         'cumulative_confirmed_age_0, cumulative_confirmed_age_1, '
+#         'cumulative_confirmed_age_2, cumulative_confirmed_age_3, '
+#         'cumulative_confirmed_age_4, cumulative_confirmed_age_5, '
+#         'cumulative_confirmed_age_6, cumulative_confirmed_age_7, '
+#         'cumulative_confirmed_age_8, cumulative_confirmed_age_9 '
+#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+# query_job = client.query(query)
+# query_result = query_job.result()
+# df_2 = query_result.to_dataframe()
