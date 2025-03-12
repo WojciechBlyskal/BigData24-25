@@ -2,21 +2,22 @@
 # 2.5
 import os
 import pandas as pd
+import numpy as np
 from google.cloud import bigquery
-#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-#       "C:/Users/ozare/Desktop/BigData/bigdata-zadania-e945fab257f4.json"
-# ) # lokalizacja pobranego klucza z punktu 1.4.
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-        "C:/Users/wojte/Documents/studia/semestr 6/BigData/" 
-        "cool-bay-452611-b5-3811a64fd49a.json"
+      "C:/Users/ozare/Desktop/BigData/bigdata-zadania-e945fab257f4.json"
 ) # lokalizacja pobranego klucza z punktu 1.4.
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+#         "C:/Users/wojte/Documents/studia/semestr 6/BigData/"
+#         "cool-bay-452611-b5-3811a64fd49a.json"
+# ) # lokalizacja pobranego klucza z punktu 1.4.
 client = bigquery.Client() 
 
 # 2.6
 query = ('select * from '
         'bigquery-public-data.covid19_open_data.covid19_open_data limit 10')
-query_job = client.query(query)    
-query_result = query_job.result()  
+query_job = client.query(query)
+query_result = query_job.result()
 df = query_result.to_dataframe()
 
 # with open("columns.txt", "w") as f:
@@ -27,18 +28,18 @@ df = query_result.to_dataframe()
 
 #print(df)
 
-# 3.1. Sprawdź, ile jest zapisanych wierszy z danymi. 
+# 3.1. Sprawdź, ile jest zapisanych wierszy z danymi.
 query = ('SELECT COUNT(*) AS total_rows '
         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
 result = client.query(query).result()
 row_count = list(result)[0]["total_rows"]
 
 print(f"Total rows: {row_count}")
-# Wnioski: Jest ponad 22 miliony wierszy, co jest wartością 
-# wykraczającą poza percepcję człowieka i nie da się tych danych 
+# Wnioski: Jest ponad 22 miliony wierszy, co jest wartością
+# wykraczającą poza percepcję człowieka i nie da się tych danych
 # przejrzeć wszystkich ręcznie w żadnym sensownym czasie
 
-# 3.2. Sprawdź, ile krajów jest uwzględnionych w danych. 
+# 3.2. Sprawdź, ile krajów jest uwzględnionych w danych.
 query = ('SELECT COUNT(DISTINCT country_code) AS total_rows '
         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
 result = client.query(query).result()
@@ -47,7 +48,7 @@ country_count = list(result)[0]["total_rows"]
 print(f"Total countries: {country_count}")
 
 # Wnioski:Są różne definicje krajów, ale w uproszczeniu można przyjąć,
-# że jest ich około 200. Zwracanych jest 246 kodów państw, co znaczy, 
+# że jest ich około 200. Zwracanych jest 246 kodów państw, co znaczy,
 # że w jakiś sposób te państwa zostały podzielone na więcej (przez
 # liczenie terytoriów zależnych oddzielnie)
 
@@ -71,7 +72,7 @@ query = """
 """
 
 df = client.query_and_wait(query).to_dataframe()
-print(df[['location_key', 'date', 'country_name', 'new_confirmed', 
+print(df[['location_key', 'date', 'country_name', 'new_confirmed',
         'new_deceased']])
 
 query = """
@@ -82,34 +83,34 @@ query = """
 """
 
 df = client.query_and_wait(query).to_dataframe()
-print(df[['location_key', 'date', 'country_name', 'new_confirmed', 
+print(df[['location_key', 'date', 'country_name', 'new_confirmed',
         'new_deceased', 'average_temperature_celsius']])
 
 # Wnioski: Są państwa, np. Maroko, Tunezja, Samoa, gdzie z danego dnia
 # otrzymujemy tylko 1 rekord jako wynik, a są też państwa, np. Polska,
 # Francja, USA, gdzie zwracane jest wiele rekordów. Po przejrzeniu
 # danych okazuje się, iż wynika to z podziału danych na poszczególne
-# regiony - kolumna location_key jest zbudowana następująco: pierwsze
-# dwie litery to kod kraju, kolejne kilka liter to region, po czym 
+# regiony- kolumna location_key jest zbudowana następująco: pierwsze
+# dwie litery to kod kraju, kolejne kilka liter to region, po czym
 # następuje ciąg cyfr, który najprawdopodobniej oznacza rozróżnienie na
-# jeszcze mniejsze regiony (np. na departamenty we Francji). Są też 
+# jeszcze mniejsze regiony (np. na departamenty we Francji). Są też
 # kraje, np. Gwatemala, która pomimo posiadania oficjalnego podziału na
-# regiony, dla niektórych danych rozróżnia je między poszczególne 
-# regiony, a dla innych są jedynie wartości zbiorcze, np. dane 
+# regiony, dla niektórych danych rozróżnia je między poszczególne
+# regiony, a dla innych są jedynie wartości zbiorcze, np. dane
 # o pogodzie są rozróżnione między regionami, a o zachorowaniach podano
 # jedynie liczby zbiorczo dla całego kraju.
 
 
-# 3.4. Sprawdź, w jaki sposób zapisywane są wartości liczbowe.  
+# 3.4. Sprawdź, w jaki sposób zapisywane są wartości liczbowe.
 #numeric_cols = df.select_dtypes(include=['number']).columns
 #print("Numeric columns:", numeric_cols.tolist())
-#print(df[['aggregation_level', 'new_confirmed', 'new_deceased', 
+#print(df[['aggregation_level', 'new_confirmed', 'new_deceased',
 # 'cumulative_confirmed', 'cumulative_deceased', 'cumulative_tested']])
 
 query = """
         SELECT *
         FROM `bigquery-public-data.covid19_open_data.covid19_open_data`
-        WHERE country_name LIKE 'France' AND date = '2020-10-06' 
+        WHERE country_name LIKE 'France' AND date = '2020-10-06'
                 AND new_deceased < 0
         ORDER BY location_key
 """
@@ -147,17 +148,17 @@ print(df[['new_tested', 'population_largest_city',
 print(df[['adult_male_mortality_rate',
         'adult_female_mortality_rate', 'pollution_mortality_rate',
         'comorbidity_mortality_rate', 'mobility_retail_and_recreation']])
-print(df[['mobility_grocery_and_pharmacy', 'mobility_parks', 
+print(df[['mobility_grocery_and_pharmacy', 'mobility_parks',
         'mobility_transit_stations', 'mobility_workplaces',
         'mobility_residential', 'age_bin_0', 'location_geometry']])
 
 # Wnioski: Wartości liczbowe są na ogół przechowywane jako int64 lub
 # float64. Wyjątkiem są kolumny, które są przechowywane jako obiekt.
-# Niektóre z kolumn które przechowują obiekty zawierają dane na pozór
-# liczbowe. Są też miejsca gdzie są podane wartości ujemne, które muszą
+# Niektóre z kolumn, które przechowują obiekty, zawierają dane na pozór
+# liczbowe. Są też miejsca, gdzie są podane wartości ujemne, które muszą
 # mieć pewne specjalne znaczenie.
 
-# 3.5. Sprawdź, jaki przedział czasowy jest uwzględniony w danych. 
+# 3.5. Sprawdź, jaki przedział czasowy jest uwzględniony w danych.
 # Dodatkowo porównaj przedziały czasowe dla przypadków nowych
 # zachorowań, nowych śmierci oraz nowych zaszczepionych osób w danych.
 
@@ -180,7 +181,7 @@ row = next(result)
 start_date = row.start_date
 end_date = row.end_date
 
-print("Data period of new confirmed cases: " + str(start_date) + "/" 
+print("Data period of new confirmed cases: " + str(start_date) + "/"
       + str(end_date))
 
 query = ('SELECT MIN(date) AS start_date, MAX(date) AS end_date '
@@ -191,7 +192,7 @@ row = next(result)
 start_date = row.start_date
 end_date = row.end_date
 
-print("Data period of new deceased cases: " + str(start_date) + "/" 
+print("Data period of new deceased cases: " + str(start_date) + "/"
       + str(end_date))
 
 query = ('SELECT MIN(date) AS start_date, MAX(date) AS end_date '
@@ -210,13 +211,13 @@ query = ('SELECT new_confirmed, new_deceased, new_persons_vaccinated '
         'WHERE date = "2022-09-17"')
 result = client.query(query).result()
 row = next(result)
-print(str(row.new_confirmed) + ", " + str(row.new_deceased) + ", " 
+print(str(row.new_confirmed) + ", " + str(row.new_deceased) + ", "
       + str(row.new_persons_vaccinated))
 
 # Wnioski: Od pierwszego dnia zbierania danych odnotowywane są
 # przypadki zarażenia i zgonu, ale szczepienia zaczynają się z dopiero
-# w marcu co prawdopobnie wynika z niepodawania jej wcześniej ludziom.
-# Ostatniego dnia nie było żadnych danych na temat nowych zakazeń, 
+# w marcu, co prawdopodobnie wynika z niepodawania jej wcześniej ludziom.
+# Ostatniego dnia nie było żadnych danych na temat nowych zakażeń,
 # śmierci lub szczepień.
 
 # 3.6. Sprawdź więcej informacji (co najmniej 5 różnych) o danych
@@ -229,10 +230,10 @@ query = ('SELECT cumulative_confirmed, cumulative_deceased, '
 )
 result = client.query(query).result()
 row = next(result)
-print(str(row.cumulative_confirmed) + ", " + str(row.cumulative_deceased) + ", " 
+print(str(row.cumulative_confirmed) + ", " + str(row.cumulative_deceased) + ", "
       + str(row.cumulative_persons_vaccinated))
 
-# 1. 
+# 1.
 
 # 2.
 
@@ -262,12 +263,42 @@ query = ('SELECT DISTINCT(country_name), '#iso_3166_1_alpha_2, iso_3166_1_alpha_
         'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
         'LIMIT 20'
 )
+
+query = ('SELECT country_name, '#iso_3166_1_alpha_2, iso_3166_1_alpha_3, ' 
+        #'population, population_male, population_female, population_rural, '
+        #'population_urban, population_density, human_development_index, '
+        'gdp_usd, gdp_per_capita_usd, population_largest_city, '
+        'life_expectancy, human_capital_index, area_sq_km '
+        'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+        'LIMIT 20'
+)
+
 query_job = client.query(query)
 query_result = query_job.result()
 df_1 = query_result.to_dataframe()
 
 print(df_1)
-df_1 = df_1.distinct
+
+df_1 = df_1.replace({None: np.nan, pd.NA: np.nan})
+
+print("Number of missing values in each column of the DataFrame:")
+print(df_1.isna().sum())
+
+total_missing = df_1.isna().sum().sum()
+print(f"Total of missing values in the DataFrame: {total_missing}")
+
+df_missing = df_1[df_1.isna().any(axis=1)]
+print("Rows with missing values:")
+print(df_missing)
+
+num_duplicates = df_1.duplicated().sum()
+print(f"Number of duplicates: {num_duplicates}")
+
+df_duplicates = df_1[df_1.duplicated()]
+if num_duplicates > 0:
+        print("Rows with duplicates:")
+        print(df_duplicates)
+
 
 # Uzasadnienie: Dobieramy nazwę państwa, bo to jest jedyna postać 
 # czytelna dla każdego człowieka. Zachowujemy obie formy ISO zapisu
