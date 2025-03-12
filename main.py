@@ -3,8 +3,8 @@
 import os
 import pandas as pd
 from google.cloud import bigquery
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/ozare/Desktop/BigData/bigdata-zadania-e945fab257f4.json" # lokalizacja pobranego klucza z punktu 1.4.
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/wojte/Documents/studia/semestr 6/BigData/cool-bay-452611-b5-3811a64fd49a.json" # lokalizacja pobranego klucza z punktu 1.4.
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/ozare/Desktop/BigData/bigdata-zadania-e945fab257f4.json" # lokalizacja pobranego klucza z punktu 1.4.
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="C:/Users/wojte/Documents/studia/semestr 6/BigData/cool-bay-452611-b5-3811a64fd49a.json" # lokalizacja pobranego klucza z punktu 1.4.
 client = bigquery.Client() 
 
 # 2.6
@@ -59,16 +59,6 @@ ORDER BY location_key
 """
 
 df = client.query_and_wait(query).to_dataframe()
-print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased', 'location_geometry']])
-
-query = """
-SELECT *
-FROM `bigquery-public-data.covid19_open_data.covid19_open_data`
-WHERE country_name LIKE 'France' AND date = '2020-10-06' AND new_deceased < 0
-ORDER BY location_key
-"""
-
-df = client.query_and_wait(query).to_dataframe()
 print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased']])
 
 query = """
@@ -94,8 +84,17 @@ print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased
 #numeric_cols = df.select_dtypes(include=['number']).columns
 #print("Numeric columns:", numeric_cols.tolist())
 #print(df[['aggregation_level', 'new_confirmed', 'new_deceased', 'cumulative_confirmed', 'cumulative_deceased', 'cumulative_tested']])
+query = """
+SELECT *
+FROM `bigquery-public-data.covid19_open_data.covid19_open_data`
+WHERE country_name LIKE 'France' AND date = '2020-10-06' AND new_deceased < 0
+ORDER BY location_key
+"""
 
-query = ('select * from bigquery-public-data.covid19_open_data.covid19_open_data limit 10')
+df = client.query_and_wait(query).to_dataframe()
+print(df[['location_key', 'date', 'country_name', 'new_confirmed', 'new_deceased']])
+
+query = ('select * from bigquery-public-data.covid19_open_data.covid19_open_data limit 20')
 query_job = client.query(query)
 query_result = query_job.result()
 df = query_result.to_dataframe()
@@ -108,6 +107,23 @@ with open("numeric_dtypes.txt", "w") as f:
     f.write(numeric_dtypes.to_string())
 
 print("Typy danych kolumn liczbowych zapisane do numeric_dtypes.txt")
+
+non_numeric_dtypes = df.select_dtypes(exclude=["number"]).dtypes
+
+print(non_numeric_dtypes)
+
+
+with open("non_numeric_dtypes.txt", "w") as f:
+    f.write(non_numeric_dtypes.to_string())
+
+print(df[['new_tested', 'population_largest_city',
+        'population_clustered', 'human_capital_index', 'area_rural_sq_km',
+        'area_urban_sq_km', 'life_expectancy']])
+print(df[['adult_male_mortality_rate',
+        'adult_female_mortality_rate', 'pollution_mortality_rate',
+        'comorbidity_mortality_rate', 'mobility_retail_and_recreation']])
+print(df[['mobility_grocery_and_pharmacy', 'mobility_parks', 'mobility_transit_stations', 'mobility_workplaces',
+        'mobility_residential', 'age_bin_0', 'location_geometry']])
 
 #  3.5. Sprawdź, jaki przedział czasowy jest uwzględniony w danych. 
 # Dodatkowo porównaj przedziały czasowe dla przypadków nowych zachorowań, nowych śmierci oraz nowych zaszczepionych osób w danych.
