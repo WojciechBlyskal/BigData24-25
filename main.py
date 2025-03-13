@@ -255,7 +255,7 @@ print(str(row.cumulative_confirmed) + ", " + str(row.cumulative_deceased) + ", "
 # które będą zrozumiałe dla człowieka oraz uniwersalne i potencjalnie
 # przyszłościowe do dalszego przetwarzania.
 
-query = ('SELECT DISTINCT(country_name), '#iso_3166_1_alpha_2, iso_3166_1_alpha_3, ' 
+query = ('SELECT DISTINCT(country_name), '#iso_3166_1_alpha_2, iso_3166_1_alpha_3, '
         #'population, population_male, population_female, population_rural, '
         #'population_urban, population_density, human_development_index, '
         'gdp_usd, gdp_per_capita_usd, population_largest_city, '
@@ -264,14 +264,14 @@ query = ('SELECT DISTINCT(country_name), '#iso_3166_1_alpha_2, iso_3166_1_alpha_
         'LIMIT 20'
 )
 
-query = ('SELECT country_name, '#iso_3166_1_alpha_2, iso_3166_1_alpha_3, ' 
-        #'population, population_male, population_female, population_rural, '
-        #'population_urban, population_density, human_development_index, '
-        'gdp_usd, gdp_per_capita_usd, population_largest_city, '
-        'life_expectancy, human_capital_index, area_sq_km '
-        'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
-        'LIMIT 20'
-)
+# query = ('SELECT country_name, '#iso_3166_1_alpha_2, iso_3166_1_alpha_3, '
+#         #'population, population_male, population_female, population_rural, '
+#         #'population_urban, population_density, human_development_index, '
+#         'gdp_usd, gdp_per_capita_usd, population_largest_city, '
+#         'life_expectancy, human_capital_index, area_sq_km '
+#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+#         'LIMIT 20'
+# )
 
 query_job = client.query(query)
 query_result = query_job.result()
@@ -280,16 +280,33 @@ df_1 = query_result.to_dataframe()
 print(df_1)
 
 df_1 = df_1.replace({None: np.nan, pd.NA: np.nan})
+# df_1["gdp_usd"] = df_1["gdp_usd"].replace(pd.NA, np.nan)
 
-print("Number of missing values in each column of the DataFrame:")
-print(df_1.isna().sum())
+
+# print("Number of missing values in each column of the DataFrame:")
+# print(df_1.isna().sum())
 
 total_missing = df_1.isna().sum().sum()
-print(f"Total of missing values in the DataFrame: {total_missing}")
+if total_missing > 0:
+        print("Number of missing values in each column of the DataFrame:")
+        print(df_1.isna().sum())
+        print(f"Total of missing values in the DataFrame: {total_missing}")
+        df_missing = df_1[df_1.isna().any(axis=1)]
+        print("Rows with missing values:")
+        print(df_missing)
 
-df_missing = df_1[df_1.isna().any(axis=1)]
-print("Rows with missing values:")
-print(df_missing)
+df_1 = df_1.dropna()
+
+print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
+total_missing = df_1.isna().sum().sum()
+if total_missing > 0:
+        print("Number of missing values in each column of the DataFrame:")
+        print(df_1.isna().sum())
+        print(f"Total of missing values in the DataFrame: {total_missing}")
+        df_missing = df_1[df_1.isna().any(axis=1)]
+        print("Rows with missing values:")
+        print(df_missing)
 
 num_duplicates = df_1.duplicated().sum()
 print(f"Number of duplicates: {num_duplicates}")
@@ -298,6 +315,19 @@ df_duplicates = df_1[df_1.duplicated()]
 if num_duplicates > 0:
         print("Rows with duplicates:")
         print(df_duplicates)
+        df_1 = df_1.drop_duplicates()
+        df_1 = df_1.reset_index(drop=True)
+        print(df_1)
+
+
+# num_duplicates = df_1.duplicated().sum()
+# print(f"Number of duplicates: {num_duplicates}")
+#
+# df_duplicates = df_1[df_1.duplicated()]
+# if num_duplicates > 0:
+#         print("Rows with duplicates:")
+#         print(df_duplicates)
+
 
 
 # Uzasadnienie: Dobieramy nazwę państwa, bo to jest jedyna postać 
