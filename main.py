@@ -388,6 +388,28 @@ if num_duplicates > 0:
 #         print("Rows with duplicates:")
 #         print(df_duplicates)
 
+query = ('SELECT life_expectancy '
+        'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+         'WHERE life_expectancy NOT LIKE "__.%" OR life_expectancy NOT LIKE "___.%"'
+        'GROUP BY life_expectancy '
+)
+
+query_job = client.query(query)
+query_result = query_job.result()
+df = query_result.to_dataframe()
+print(df_1)
+
+df_1['life_expectancy'] = df_1['life_expectancy'].astype(float)
+print("Life expectancy type: ", df_1['life_expectancy'].dtype)
+
+# Uzasadnienie: Dobieramy nazwę państwa, bo to jest jedyna postać
+# czytelna dla każdego człowieka. Zachowujemy obie formy ISO zapisu
+# nazwy kraju, gdyż chcemy zachować uniwersalność identyfikatorów
+# państw. Zachowujemy całkowitą wielkość populacji wraz z jej podziałem
+# na płeć, miejsce zamieszkania i gęstość zamieszkania, gdyż są to
+# czynniki, które mogą mieć znaczenie przy badaniu choroby. Zachowujemy
+# HDI oraz pkb na osobę, gdyż daje nam to obraz standardu życiowego
+# w skali odpowiednio lokalnej oraz międzynarodowej.
 
 
 # Uzasadnienie: Dobieramy nazwę państwa, bo to jest jedyna postać 
@@ -415,3 +437,58 @@ if num_duplicates > 0:
 # query_job = client.query(query)
 # query_result = query_job.result()
 # df_2 = query_result.to_dataframe()
+
+# 4.3. Chcemy poznać efekty COVID-19 poprzez uwypuklenie problemu
+# śmiertelności ludzi spowodowanej wirusem.
+
+# query = ('SELECT new_deceased, cumulative_deceased, new_deceased_male, '
+#         'new_deceased_female, cumulative_deceased_male, '
+#         'cumulative_deceased_female, new_deceased_age_0, '
+#         'new_deceased_age_1, new_deceased_age_2, new_deceased_age_3, '
+#         'new_deceased_age_4, new_deceased_age_5, new_deceased_age_6, '
+#         'new_deceased_age_7, new_deceased_age_8, new_deceased_age_9, '
+#         'cumulative_deceased_age_0, cumulative_deceased_age_1, '
+#         'cumulative_deceased_age_2, cumulative_deceased_age_3, '
+#         'cumulative_deceased_age_4, cumulative_deceased_age_5, '
+#         'cumulative_deceased_age_6, cumulative_deceased_age_7, '
+#         'cumulative_deceased_age_8, cumulative_deceased_age_9 '
+#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+# query_job = client.query(query)
+# query_result = query_job.result()
+# df_3 = query_result.to_dataframe()
+
+# 4.4. Chcemy zaobserwować trendy i zależności dotyczące szczepień
+# na COVID-19.
+
+# query = ('SELECT new_persons_vaccinated, cumulative_persons_vaccinated, '
+#         'new_persons_fully_vaccinated, cumulative_persons_fully_vaccinated, '
+#         'new_vaccine_doses_administered, '
+#         'cumulative_vaccine_doses_administered, '
+#         'new_persons_fully_vaccinated_pfizer, '
+#         'cumulative_persons_fully_vaccinated_pfizer, '
+#         'new_vaccine_doses_administered_pfizer, '
+#         'cumulative_vaccine_doses_administered_pfizer, '
+#         'new_persons_fully_vaccinated_moderna, '
+#         'cumulative_persons_fully_vaccinated_moderna, '
+#         'new_vaccine_doses_administered_moderna, '
+#         'cumulative_vaccine_doses_administered_moderna, '
+#         'new_persons_fully_vaccinated_janssen, '
+#         'cumulative_persons_fully_vaccinated_janssen, '
+#         'new_vaccine_doses_administered_janssen, '
+#         'cumulative_vaccine_doses_administered_janssen '
+#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+# query_job = client.query(query)
+# query_result = query_job.result()
+# df_4 = query_result.to_dataframe()
+
+# 4.5. Zdefiniuj własny dodatkowy przypadek.
+# Przypadek: Chcemy wygenerować statystyki dotyczące ogólnej
+# opieki zdrowotnej.
+
+# query = ('SELECT nurses_per_1000, physicians_per_1000, '
+#         'health_expenditure_usd, out_of_pocket_health_expenditure_usd, '
+#         'emergency_investment_in_healthcare, hospital_beds_per_1000 '
+#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+# query_job = client.query(query)
+# query_result = query_job.result()
+# df_4 = query_result.to_dataframe()
