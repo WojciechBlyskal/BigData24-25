@@ -233,6 +233,66 @@ row = next(result)
 print(str(row.cumulative_confirmed) + ", " + str(row.cumulative_deceased) + ", "
       + str(row.cumulative_persons_vaccinated))
 
+query = ('SELECT population_age_00_09, population_age_10_19, population_age_20_29, '
+         'population_age_30_39, population_age_40_49, population_age_50_59, population_age_60_69, '
+         'population_age_70_79, population_age_80_and_older, life_expectancy FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+         'GROUP BY population_age_00_09, population_age_10_19, population_age_20_29, '
+         'population_age_30_39, population_age_40_49, population_age_50_59, population_age_60_69, '
+         'population_age_70_79, population_age_80_and_older, life_expectancy '
+         'LIMIT 30')
+
+query = ('SELECT country_name, age_bin_0, age_bin_1, age_bin_2, age_bin_3, age_bin_4, age_bin_5, age_bin_6, '
+         'age_bin_7, age_bin_8, age_bin_9 FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+         'GROUP BY country_name, age_bin_0, age_bin_1, age_bin_2, age_bin_3, age_bin_4, age_bin_5, age_bin_6, '
+         'age_bin_7, age_bin_8, age_bin_9 ORDER BY country_name LIMIT 30')
+
+
+
+query = ('SELECT country_name, cumulative_confirmed_age_0, cumulative_confirmed_age_1, '
+         'cumulative_confirmed_age_2, cumulative_confirmed_age_3 '
+         'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+         'GROUP BY country_name, cumulative_confirmed_age_0, cumulative_confirmed_age_1, '
+         'cumulative_confirmed_age_2, cumulative_confirmed_age_3 ORDER BY country_name LIMIT 30')
+
+
+# query = ('SELECT country_name, nurses_per_1000, physicians_per_1000, hospital_beds_per_1000 '
+#          'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+#          'WHERE hospital_beds_per_1000 > 0 '
+#          'GROUP BY country_name, nurses_per_1000, physicians_per_1000, hospital_beds_per_1000 '
+#          'ORDER BY hospital_beds_per_1000 DESC LIMIT 70')
+
+query = ('SELECT country_name, nurses_per_1000, physicians_per_1000 '
+         'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+         # 'WHERE hospital_beds_per_1000 > 0 '
+         'GROUP BY country_name, nurses_per_1000, physicians_per_1000 '
+         'ORDER BY physicians_per_1000 DESC LIMIT 70')
+
+
+
+query = ('SELECT country_name, pollution_mortality_rate, comorbidity_mortality_rate '
+         'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
+         'GROUP BY country_name, pollution_mortality_rate, comorbidity_mortality_rate '
+         'LIMIT 70')
+
+
+
+
+
+
+
+query_job = client.query(query)
+query_result = query_job.result()
+df_1 = query_result.to_dataframe()
+
+print(df_1)
+
+
+
+
+
+
+
+
 # 1.
 
 # 2.
@@ -297,7 +357,7 @@ if total_missing > 0:
 
 df_1 = df_1.dropna()
 
-print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+print("Done")
 
 total_missing = df_1.isna().sum().sum()
 if total_missing > 0:
