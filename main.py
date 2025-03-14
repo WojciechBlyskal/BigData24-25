@@ -4,13 +4,13 @@ import os
 import pandas as pd
 import numpy as np
 from google.cloud import bigquery
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-      "C:/Users/ozare/Desktop/BigData/bigdata-zadania-e945fab257f4.json"
-) # lokalizacja pobranego klucza z punktu 1.4.
 # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-#         "C:/Users/wojte/Documents/studia/semestr 6/BigData/"
-#         "cool-bay-452611-b5-3811a64fd49a.json"
+#       "C:/Users/ozare/Desktop/BigData/bigdata-zadania-e945fab257f4.json"
 # ) # lokalizacja pobranego klucza z punktu 1.4.
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
+        "C:/Users/wojte/Documents/studia/semestr 6/BigData/"
+        "cool-bay-452611-b5-3811a64fd49a.json"
+) # lokalizacja pobranego klucza z punktu 1.4.
 client = bigquery.Client() 
 
 # 2.6
@@ -319,9 +319,8 @@ query = ('SELECT DISTINCT(country_name), '#iso_3166_1_alpha_2, iso_3166_1_alpha_
         #'population, population_male, population_female, population_rural, '
         #'population_urban, population_density, human_development_index, '
         'gdp_usd, gdp_per_capita_usd, population_largest_city, '
-        'life_expectancy, human_capital_index, area_sq_km '
+        'life_expectancy, human_capital_index, area_sq_km, date '
         'FROM bigquery-public-data.covid19_open_data.covid19_open_data '
-        'LIMIT 20'
 )
 
 # query = ('SELECT country_name, '#iso_3166_1_alpha_2, iso_3166_1_alpha_3, '
@@ -401,6 +400,7 @@ print(df_1)
 
 df_1['life_expectancy'] = df_1['life_expectancy'].astype(float)
 print("Life expectancy type: ", df_1['life_expectancy'].dtype)
+df_1.to_csv("4_1.csv", index=False)
 
 # Uzasadnienie: Dobieramy nazwę państwa, bo to jest jedyna postać
 # czytelna dla każdego człowieka. Zachowujemy obie formy ISO zapisu
@@ -424,71 +424,109 @@ print("Life expectancy type: ", df_1['life_expectancy'].dtype)
 # 4.2. Chcemy wygenerować statystyki dotyczące zachorowań na COVID-19 
 # na całym świecie.
 
-# query = ('SELECT new_confirmed, cumulative_confirmed, new_confirmed_age_0, '
-#         'new_confirmed_age_1, new_confirmed_age_2, new_confirmed_age_3, '
-#         'new_confirmed_age_4, new_confirmed_age_5, new_confirmed_age_6, '
-#         'new_confirmed_age_7, new_confirmed_age_8, new_confirmed_age_9, '
-#         'cumulative_confirmed_age_0, cumulative_confirmed_age_1, '
-#         'cumulative_confirmed_age_2, cumulative_confirmed_age_3, '
-#         'cumulative_confirmed_age_4, cumulative_confirmed_age_5, '
-#         'cumulative_confirmed_age_6, cumulative_confirmed_age_7, '
-#         'cumulative_confirmed_age_8, cumulative_confirmed_age_9 '
-#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
-# query_job = client.query(query)
-# query_result = query_job.result()
-# df_2 = query_result.to_dataframe()
+query = ('SELECT new_confirmed, cumulative_confirmed, '
+        'cumulative_confirmed_age_0, cumulative_confirmed_age_1, '
+        'cumulative_confirmed_age_2, cumulative_confirmed_age_3, '
+        'cumulative_confirmed_age_4, cumulative_confirmed_age_5, '
+        'cumulative_confirmed_age_6, cumulative_confirmed_age_7, '
+        'cumulative_confirmed_age_8, cumulative_confirmed_age_9, ' 
+        'date '
+        'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+query_job = client.query(query)
+query_result = query_job.result()
+df_2 = query_result.to_dataframe()
+
+num_duplicates = df_2.duplicated().sum()
+print(f"Number of duplicates: {num_duplicates}")
+
+df_duplicates = df_2[df_2.duplicated()]
+if num_duplicates > 0:
+        print("Rows with duplicates:")
+        print(df_duplicates)
+        df_2 = df_2.drop_duplicates()
+        df_2 = df_2.reset_index(drop=True)
+        print(df_2)
+
+df_2.to_csv("4_2.csv", index=False)
 
 # 4.3. Chcemy poznać efekty COVID-19 poprzez uwypuklenie problemu
 # śmiertelności ludzi spowodowanej wirusem.
 
-# query = ('SELECT new_deceased, cumulative_deceased, new_deceased_male, '
-#         'new_deceased_female, cumulative_deceased_male, '
-#         'cumulative_deceased_female, new_deceased_age_0, '
-#         'new_deceased_age_1, new_deceased_age_2, new_deceased_age_3, '
-#         'new_deceased_age_4, new_deceased_age_5, new_deceased_age_6, '
-#         'new_deceased_age_7, new_deceased_age_8, new_deceased_age_9, '
-#         'cumulative_deceased_age_0, cumulative_deceased_age_1, '
-#         'cumulative_deceased_age_2, cumulative_deceased_age_3, '
-#         'cumulative_deceased_age_4, cumulative_deceased_age_5, '
-#         'cumulative_deceased_age_6, cumulative_deceased_age_7, '
-#         'cumulative_deceased_age_8, cumulative_deceased_age_9 '
-#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
-# query_job = client.query(query)
-# query_result = query_job.result()
-# df_3 = query_result.to_dataframe()
+query = ('SELECT date, new_deceased, cumulative_deceased, new_deceased_male, '
+        'new_deceased_female, cumulative_deceased_male, '
+        'cumulative_deceased_female, '
+        'cumulative_deceased_age_0, cumulative_deceased_age_1, '
+        'cumulative_deceased_age_2, cumulative_deceased_age_3, '
+        'cumulative_deceased_age_4, cumulative_deceased_age_5, '
+        'cumulative_deceased_age_6, cumulative_deceased_age_7, '
+        'cumulative_deceased_age_8, cumulative_deceased_age_9 '
+        'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+query_job = client.query(query)
+query_result = query_job.result()
+df_3 = query_result.to_dataframe()
+
+num_duplicates = df_3.duplicated().sum()
+print(f"Number of duplicates: {num_duplicates}")
+
+df_duplicates = df_3[df_3.duplicated()]
+if num_duplicates > 0:
+        print("Rows with duplicates:")
+        print(df_duplicates)
+        df_3 = df_3.drop_duplicates()
+        df_3 = df_3.reset_index(drop=True)
+        print(df_3)
+
+df_3.to_csv("4_3.csv", index=False)
 
 # 4.4. Chcemy zaobserwować trendy i zależności dotyczące szczepień
 # na COVID-19.
 
-# query = ('SELECT new_persons_vaccinated, cumulative_persons_vaccinated, '
-#         'new_persons_fully_vaccinated, cumulative_persons_fully_vaccinated, '
-#         'new_vaccine_doses_administered, '
-#         'cumulative_vaccine_doses_administered, '
-#         'new_persons_fully_vaccinated_pfizer, '
-#         'cumulative_persons_fully_vaccinated_pfizer, '
-#         'new_vaccine_doses_administered_pfizer, '
-#         'cumulative_vaccine_doses_administered_pfizer, '
-#         'new_persons_fully_vaccinated_moderna, '
-#         'cumulative_persons_fully_vaccinated_moderna, '
-#         'new_vaccine_doses_administered_moderna, '
-#         'cumulative_vaccine_doses_administered_moderna, '
-#         'new_persons_fully_vaccinated_janssen, '
-#         'cumulative_persons_fully_vaccinated_janssen, '
-#         'new_vaccine_doses_administered_janssen, '
-#         'cumulative_vaccine_doses_administered_janssen '
-#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
-# query_job = client.query(query)
-# query_result = query_job.result()
-# df_4 = query_result.to_dataframe()
+query = ('SELECT new_persons_vaccinated, cumulative_persons_vaccinated, '
+        'new_persons_fully_vaccinated, cumulative_persons_fully_vaccinated, '
+        'new_vaccine_doses_administered, '
+        'cumulative_vaccine_doses_administered, date '
+        'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+query_job = client.query(query)
+query_result = query_job.result()
+df_4 = query_result.to_dataframe()
+
+num_duplicates = df_4.duplicated().sum()
+print(f"Number of duplicates: {num_duplicates}")
+
+df_duplicates = df_4[df_4.duplicated()]
+if num_duplicates > 0:
+        print("Rows with duplicates:")
+        print(df_duplicates)
+        df_4 = df_4.drop_duplicates()
+        df_4 = df_4.reset_index(drop=True)
+        print(df_4)
+
+df_4.to_csv("4_4.csv", index=False)
+
+# Odrzucono uwzględnienie marki podanej szczepionki, bo były tak nieliczne w stosounku do całego zbioru, że nie miało to sensu.
 
 # 4.5. Zdefiniuj własny dodatkowy przypadek.
 # Przypadek: Chcemy wygenerować statystyki dotyczące ogólnej
 # opieki zdrowotnej.
 
-# query = ('SELECT nurses_per_1000, physicians_per_1000, '
-#         'health_expenditure_usd, out_of_pocket_health_expenditure_usd, '
-#         'emergency_investment_in_healthcare, hospital_beds_per_1000 '
-#         'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
-# query_job = client.query(query)
-# query_result = query_job.result()
-# df_4 = query_result.to_dataframe()
+query = ('SELECT date, nurses_per_1000, physicians_per_1000, '
+        'health_expenditure_usd, out_of_pocket_health_expenditure_usd '
+        'FROM bigquery-public-data.covid19_open_data.covid19_open_data')
+query_job = client.query(query)
+query_result = query_job.result()
+df_5 = query_result.to_dataframe()
+
+num_duplicates = df_5.duplicated().sum()
+print(f"Number of duplicates: {num_duplicates}")
+
+df_duplicates = df_5[df_5.duplicated()]
+if num_duplicates > 0:
+        print("Rows with duplicates:")
+        print(df_duplicates)
+        df_5 = df_5.drop_duplicates()
+        df_5 = df_5.reset_index(drop=True)
+        print(df_5)
+
+df_5.to_csv("4_5.csv", index=False)
+
+# Zrezygnowano z łóżek na 1000 bo było mało, oraz z emergency_health_expenditure, bo prawie zawsze było to 0 lub nic.
